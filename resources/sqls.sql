@@ -1,0 +1,1 @@
+CREATE TABLE `tweets` ( `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, `tweet_id` INTEGER NOT NULL, `tw_user_name` TEXT NOT NULL, `tw_text` TEXT NOT NULL, `tw_date` INTEGER NOT NULL, `tw_polarity` INTEGER, `probability` REAL, `intensity` REAL )
