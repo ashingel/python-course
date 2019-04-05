@@ -3,6 +3,7 @@ from configparser import RawConfigParser
 import tweepy
 
 from db.ConnectionManager import ConnectionManager
+from ml.TweetPolarityClassifier import TweetPolarityClassifier
 from twitter.Tweet import Tweet
 
 from twitter import Tweet
@@ -33,11 +34,14 @@ class TweetsDownloader:
 
         api = tweepy.API(auth)
 
-        public_tweets = api.search(q="minsk", lang="en", since_id=ConnectionManager.STARTING_ID)
+        # public_tweets = api.search(q="minsk", lang="en", since_id=ConnectionManager.STARTING_ID)
+
+        query = "minsk"
+        searched_tweets = tweepy.Cursor(api.search, q=query, count=10, include_entities=True, tweet_mode='extended',
+                                        since='2019-04-01', lang="en")
 
         tweets = list()
-
-        for tweet in public_tweets:
+        for tweet in searched_tweets.items():
             user = tweet.user
             tweet_obj = Tweet.Tweet(tweet, user)
             tweets.append(tweet_obj)
@@ -51,5 +55,13 @@ def test_twitter():
     for message in messages:
         print(message.name)
 
+    path_to_db = "D:/projects/education/python/sources/course-work/sources/python-course/resources/tweets.db"
 
-test_twitter()
+    classifier = TweetPolarityClassifier()
+    classifier.classify_tweets(messages)
+
+    connection_manager = ConnectionManager(path_to_db)
+    connection_manager.save_messages(messages)
+
+
+# test_twitter()

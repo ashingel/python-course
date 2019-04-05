@@ -23,33 +23,6 @@ class ConnectionManager:
         except Exception as ex:
             print(ex)
 
-    def add_record(self, user_name):
-        sql = "INSERT INTO tweets(user_name) VALUES ('" + user_name + "')"
-        try:
-            self.connection.execute(sql)
-            self.connection.commit()
-        except Exception as ex:
-            print(ex)
-
-    def add_records(self, column_name, records):
-        sql = "INSERT INTO test(" + column_name + ") VALUES (?)"
-        try:
-            records_to_add = [tuple(s.split()) for s in records]
-
-            self.connection.executemany(sql, records_to_add)
-            self.connection.commit()
-        except Exception as ex:
-            print(ex)
-
-    def add_simple_records(self, column_name, records):
-        sql = "INSERT INTO test (" + column_name + ") VALUES (?)"
-        try:
-            for record in records:
-                self.connection.execute(sql, (record,))
-                self.connection.commit()
-        except Exception as ex:
-            print(ex)
-
     def fetch_record(self, column_name):
         result = list()
         sql = "SELECT {} FROM test".format(column_name)
@@ -66,3 +39,23 @@ class ConnectionManager:
     # close connection
     def close_connection(self):
         self.connection.close()
+
+    def save_messages(self, tweets):
+
+        for tweet in tweets:
+            try:
+                id = tweet.tweet_id
+                screen_name = tweet.name
+                text = tweet.twitter_text
+                date = tweet.creation_date
+                polarity = tweet.polarity
+                intensity = tweet.intensity
+                probability = tweet.probability
+
+                sql = "INSERT INTO tweets (tweet_id,tw_user_name,tw_text,tw_date,tw_polarity,probability,intensity) VALUES (?,?,?,?,?,?,?)"
+                self.connection.execute(sql, (id, screen_name, text, date, polarity, intensity, probability))
+            except Exception as ex:
+                print(sql)
+                print(ex)
+
+        self.connection.commit()

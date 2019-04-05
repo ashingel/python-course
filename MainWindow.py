@@ -4,6 +4,7 @@ from PyQt5.QtCore import QCoreApplication
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QMainWindow, QApplication, QToolTip, QMenuBar, QMessageBox, QDesktopWidget
 
+import Settings
 import twitter.TweetsDownloader as twd
 
 
@@ -22,18 +23,15 @@ class MainWindow(QMainWindow):
         self.setMenuBar(self.menu_bar)
 
         actionMenu = self.menu_bar.addMenu("&File")
+        actionMenu.addAction("Settings", self.settings_action)
         actionMenu.addAction("Exit", self.exit_action)
+
 
         # help menu
         helpMenu = self.menu_bar.addMenu("&Help")
         helpMenu.addAction("About", self.showhelp)
 
         self.center()
-        # try:
-        #     twitter_downloader = twd.TweetsDownloader()
-        #     twitter_downloader.get_tweet_messages()
-        # except Exception as ex:
-        #     print(ex)
         self.show()
 
     def center(self):
@@ -44,6 +42,10 @@ class MainWindow(QMainWindow):
 
     def exit_action(self):
         QCoreApplication.instance().quit()
+
+    def settings_action(self):
+        self.settings = Settings.Settings(self)
+        self.settings.show_window()
 
     def showhelp(self):
         QMessageBox.information(self, "Help",
