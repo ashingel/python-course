@@ -1,6 +1,8 @@
+from configparser import RawConfigParser
+
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QMainWindow, QToolTip, QWidget, QGroupBox, QGridLayout, QLabel, QTextEdit, QPushButton, \
-    QVBoxLayout, QDesktopWidget, QRadioButton
+    QVBoxLayout, QDesktopWidget, QRadioButton, QLayout, QHBoxLayout
 
 
 class Settings(QMainWindow):
@@ -10,43 +12,54 @@ class Settings(QMainWindow):
         self.init_ui()
 
     def init_ui(self):
-        self.setGeometry(350, 350, 450, 220)
-        self.setWindowTitle('Add Record')
+        self.config = RawConfigParser()
+        self.config.read("././resources/application.properties")
+
+        self.sentiments_config = dict(self.config.items('Sentiments Settings'))
+
+        self.setGeometry(350, 350, 250, 150)
+        self.setWindowTitle('System settings')
         QToolTip.setFont(QFont('SansSerif', 10))
         self.setToolTip("This is a tooltip")
 
         central_widget = QWidget(self)
 
-        self.groupBox = QGroupBox("Sentiments Analysis Settings")
-        self.group_box_bottom = QGroupBox()
-
-        layout = QGridLayout(central_widget)
+        self.sentiments_groupBox = QGroupBox("Sentiments Analysis Settings")
+        sentiments_layout = QGridLayout()
 
         self.default_model_rb = QRadioButton("Use default sentiments model")
         self.custom_model_rb = QRadioButton("Use custom sentiments model")
+
+        selected_model = self.sentiments_config["sentiments.model"]
+        if selected_model == "default":
+            self.default_model_rb.setChecked(True)
+        else:
+            self.custom_model_rb.setChecked(True)
+
+        sentiments_layout.addWidget(self.default_model_rb, 0, 0)
+        sentiments_layout.addWidget(self.custom_model_rb, 1, 0)
+        self.sentiments_groupBox.setLayout(sentiments_layout)
+
         save_button = QPushButton("Save Settings")
         cancel_button = QPushButton("Cancel")
         cancel_button.clicked.connect(self.cancel_clicked)
         save_button.clicked.connect(self.save_settings_clicked)
 
-        layout.addWidget(self.default_model_rb, 0, 0)
-        layout.addWidget(self.custom_model_rb, 1, 0)
-
         bottom_widget = QWidget(self)
-        bottom_layout = QGridLayout(bottom_widget)
+        bottom_layout = QHBoxLayout()
+        bottom_layout.addStretch(1)
         bottom_widget.setLayout(bottom_layout)
-
-        self.bottom_layout.addWidget(save_button, 1, 0)
-        self.bottom_layout.addWidget(cancel_button, 2, 0)
-
-        self.groupBox.setLayout(bottom_layout)
+        bottom_layout.addWidget(save_button)
+        bottom_layout.addWidget(cancel_button)
 
         window_layout = QVBoxLayout(self)
-        window_layout.addWidget(self.groupBox)
-        window_layout.addWidget(self.group_box_bottom)
+        window_layout.addWidget(self.sentiments_groupBox)
+        window_layout.addWidget(bottom_widget)
 
         central_widget.setLayout(window_layout)
+
         self.setCentralWidget(central_widget)
+
         self.center()
 
     def set_connection(self, connection):
@@ -65,7 +78,14 @@ class Settings(QMainWindow):
         self.destroy()
 
     def save_settings_clicked(self):
-        column_one = self.column_one_edit.toPlainText()
-        column_two = self.column_two_edit.toPlainText()
-        insert_sql = "INSERT INTO database_one (column_one,column_two) VALUES('{}','{}')".format(column_one, column_two)
+        try:
+            if self.default_model_rb.isChecked():
+                self.config.set('Sentiments Settings', "sentiments.model", "default")
+            else:
+                self.config.set('Sentiments Settings', "sentiments.model", "custom")
+            with open("././resources/application.properties", "r+") as config_file:
+                self.config.write(config_file)
+        except Exception as ex:
+            print(ex)
+
         self.destroy()
