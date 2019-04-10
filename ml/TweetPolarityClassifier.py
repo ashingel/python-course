@@ -1,4 +1,3 @@
-import random
 import textblob
 
 
@@ -14,20 +13,19 @@ class TweetPolarityClassifier:
             tweet.intensity = intensity
             tweet.probability = probability
 
+    # The polarity score is a float within the range [-1.0, 1.0].
+    # The subjectivity is a float within the range [0.0, 1.0] where 0.0 is very objective and 1.0 is very subjective.
     def classify_text(self, tweet_text):
 
         analysis = textblob.TextBlob(tweet_text)
-        sentiment = analysis.sentiment
+
         polarity = "neutral"
+
         if analysis.sentiment[0] > 0:
             polarity = "positive"
         elif analysis.sentiment[0] < 0:
             polarity = "negative"
 
-        # polarity_rand = ["positive", "negative", "neutral"]
-        # polarity = polarity_rand[random.randint(0, 2)]
+        intensity = analysis.sentiment[1]
 
-        # intensity_rand = ["high", "low", "medium"]
-        # intensity = intensity_rand[random.randint(0, 2)]
-
-        return polarity, random.uniform(0, 1), random.uniform(0.5, 1)
+        return polarity, intensity, analysis.polarity

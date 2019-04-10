@@ -1,4 +1,5 @@
 from configparser import RawConfigParser
+import preprocessor as twproprocessor
 
 import tweepy
 
@@ -22,7 +23,7 @@ class TweetsDownloader:
         self.access_details = dict(config.items('Twitter Access Section'))
 
     # Method for reading simple timeline
-    def get_tweet_messages(self):
+    def get_tweet_messages(self, query, since_date):
         # get authentication data
         consumer_key = self.access_details["consumer.api.key"]
         consumer_secret = self.access_details["consumer.api.secret.key"]
@@ -36,12 +37,13 @@ class TweetsDownloader:
 
         # public_tweets = api.search(q="minsk", lang="en", since_id=ConnectionManager.STARTING_ID)
 
-        query = "minsk"
+        query += " -filter:retweets"
         searched_tweets = tweepy.Cursor(api.search, q=query, count=10, include_entities=True, tweet_mode='extended',
-                                        since='2019-04-01', lang="en")
+                                        since=since_date, lang="en")
 
         tweets = list()
-        for tweet in searched_tweets.items():
+
+        for tweet in searched_tweets.items(10):
             user = tweet.user
             tweet_obj = Tweet.Tweet(tweet, user)
             tweets.append(tweet_obj)
@@ -51,7 +53,10 @@ class TweetsDownloader:
 
 def test_twitter():
     tw_loader = TweetsDownloader()
-    messages = tw_loader.get_tweet_messages()
+    query = "lukashenko"
+    # format '2019-04-04'
+    since_date = '2019-04-09'
+    messages = tw_loader.get_tweet_messages(query, since_date)
     for message in messages:
         print(message.name)
 
@@ -61,7 +66,7 @@ def test_twitter():
     classifier.classify_tweets(messages)
 
     connection_manager = ConnectionManager(path_to_db)
-    connection_manager.save_messages(messages)
+    connection_manager.save_messages(messages, query)
 
 
 # test_twitter()

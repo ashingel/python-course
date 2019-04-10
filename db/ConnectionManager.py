@@ -40,7 +40,9 @@ class ConnectionManager:
     def close_connection(self):
         self.connection.close()
 
-    def save_messages(self, tweets):
+    # method saves processed twitter messages to DB
+    def save_messages(self, tweets, query):
+        query_id = self.get_query_id(query)
 
         for tweet in tweets:
             try:
@@ -52,10 +54,27 @@ class ConnectionManager:
                 intensity = tweet.intensity
                 probability = tweet.probability
 
-                sql = "INSERT INTO tweets (tweet_id,tw_user_name,tw_text,tw_date,tw_polarity,probability,intensity) VALUES (?,?,?,?,?,?,?)"
-                self.connection.execute(sql, (id, screen_name, text, date, polarity, intensity, probability))
+                sql = "INSERT INTO tweets (query_id,tweet_id,tw_user_name,tw_text,tw_date,tw_polarity,probability,intensity) VALUES (?,?,?,?,?,?,?,?)"
+                self.connection.execute(sql, (query_id, id, screen_name, text, date, polarity, intensity, probability))
             except Exception as ex:
                 print(sql)
                 print(ex)
 
         self.connection.commit()
+
+    # method return query id
+    def get_query_id(self, query):
+        sql = "SELECT id FROM queries WHERE query=\"{}\"".format(query)
+        try:
+            cursor = self.connection.cursor().execute(sql)
+            id = cursor.fetchone()
+            if id is not None:
+                return id[0]
+            else:
+                # save query to DB
+                sql = "INSERT INTO queries (query) VALUES (?)"
+                self.connection.execute(sql, (query,))
+                self.connection.commit()
+                return self.get_query_id(query)
+        except Exception as ex:
+            print(ex)

@@ -1,11 +1,10 @@
 import sys
-
+from SearchMessages import SearchMessages
 from PyQt5.QtCore import QCoreApplication
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QMainWindow, QApplication, QToolTip, QMenuBar, QMessageBox, QDesktopWidget
 
 import Settings
-import twitter.TweetsDownloader as twd
 
 
 class MainWindow(QMainWindow):
@@ -26,6 +25,9 @@ class MainWindow(QMainWindow):
         actionMenu.addAction("Settings", self.settings_action)
         actionMenu.addAction("Exit", self.exit_action)
 
+        twitter_menu = self.menu_bar.addMenu("&Twitter")
+        twitter_menu.addAction("Search", self.search_messages)
+        twitter_menu.addAction("Report", self.report_messages)
 
         # help menu
         helpMenu = self.menu_bar.addMenu("&Help")
@@ -46,6 +48,14 @@ class MainWindow(QMainWindow):
     def settings_action(self):
         self.settings = Settings.Settings(self)
         self.settings.show_window()
+
+    def search_messages(self):
+        messages = SearchMessages.launch(self)
+        # search_win.show_window()
+        print()
+
+    def report_messages(self):
+        print("RESULT RETURNED !")
 
     def showhelp(self):
         QMessageBox.information(self, "Help",

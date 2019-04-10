@@ -1,3 +1,6 @@
+import preprocessor as p
+
+
 class Tweet:
     # polarity: positive/negative/neutral
     # intensity: low/medium/high
@@ -7,7 +10,8 @@ class Tweet:
 
     def __init__(self, tweet, user):
         super().__init__()
-        self.twitter_text = tweet.full_text
+        p.set_options(p.OPT.URL, p.OPT.MENTION, p.OPT.NUMBER)
+        self.twitter_text = p.clean(tweet.full_text)
         self.name = user.screen_name
         self.tweet_id = user.id
         self.creation_date = tweet.created_at
