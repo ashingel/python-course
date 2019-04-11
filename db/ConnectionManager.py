@@ -1,4 +1,5 @@
 import sqlite3
+import os
 
 
 # Class which is responsible for the saving data to DB
@@ -10,7 +11,13 @@ class ConnectionManager:
     def __init__(self, path_to_file) -> None:
         super().__init__()
         try:
-            self.connection = sqlite3.connect(path_to_file)
+            if path_to_file is None:
+                path_to_db = os.getcwd() + "/resources/tweets.db"
+
+            else:
+                path_to_db = os.getcwd() + "/resources/tweets.db"
+
+            self.connection = sqlite3.connect(path_to_db)
         except Exception as ex:
             print(ex)
 
@@ -52,10 +59,9 @@ class ConnectionManager:
                 date = tweet.creation_date
                 polarity = tweet.polarity
                 intensity = tweet.intensity
-                probability = tweet.probability
 
-                sql = "INSERT INTO tweets (query_id,tweet_id,tw_user_name,tw_text,tw_date,tw_polarity,probability,intensity) VALUES (?,?,?,?,?,?,?,?)"
-                self.connection.execute(sql, (query_id, id, screen_name, text, date, polarity, intensity, probability))
+                sql = "INSERT INTO tweets (query_id,tweet_id,tw_user_name,tw_text,tw_date,polarity,intensity) VALUES (?,?,?,?,?,?,?)"
+                self.connection.execute(sql, (query_id, id, screen_name, text, date, polarity, intensity))
             except Exception as ex:
                 print(sql)
                 print(ex)
@@ -78,3 +84,30 @@ class ConnectionManager:
                 return self.get_query_id(query)
         except Exception as ex:
             print(ex)
+
+    def get_queries_items(self):
+        sql = "SELECT query FROM queries"
+        result = list()
+        try:
+            cursor = self.connection.cursor().execute(sql)
+            for record in cursor:
+                result.append(record)
+        except Exception as ex:
+            print(ex)
+        return result
+
+    def get_polarity_messages(self, query):
+
+        query_id = self.get_query_id(query)
+
+        sql = "SELECT tw_text,polarity FROM tweets WHERE query_id ={}".format(query_id)
+
+        result = list()
+        try:
+            cursor = self.connection.cursor().execute(sql)
+            for record in cursor:
+                result.append(record)
+        except Exception as ex:
+            print(ex)
+
+        return result

@@ -4,9 +4,8 @@ import preprocessor as p
 class Tweet:
     # polarity: positive/negative/neutral
     # intensity: low/medium/high
-    polarity = "neutral"
+    polarity = 0
     intensity = 0
-    probability = 0
 
     def __init__(self, tweet, user):
         super().__init__()
