@@ -17,9 +17,9 @@ class TweetsDownloader:
 
         # init twitter reading settings
         config = RawConfigParser()
-        # config.read("././resources/application.properties")
-        config.read(
-            "D:/projects/education/python/sources/course-work/sources/python-course/resources/application.properties")
+        config.read("././resources/application.properties")
+        # config.read(
+        #     "D:/projects/education/python/sources/course-work/sources/python-course/resources/application.properties")
         self.access_details = dict(config.items('Twitter Access Section'))
 
     # Method for reading simple timeline

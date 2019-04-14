@@ -86,7 +86,8 @@ class SearchMessages(QDialog):
         self.move(qr.topLeft())
 
     def cancel_clicked(self):
-        self.destroy()
+        self.messages = None
+        self.close()
 
     def search_clicked(self):
         query = self.query_edit.text()

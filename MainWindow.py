@@ -66,37 +66,38 @@ class MainWindow(QMainWindow):
 
     def search_messages(self):
         messages = SearchMessages.launch(self)
-        if self.table is None:
-            self.table = QTableView(self)
-        else:
-            self.table_layout.removeWidget(self.table)
+        if messages is not None:
+            if self.table is None:
+                self.table = QTableView(self)
+            else:
+                self.table_layout.removeWidget(self.table)
 
-        self.tweets_model = QStandardItemModel()
-        self.table.setModel(self.tweets_model)
-        # Do the resize of the columns by content
-        self.tweets_model.setColumnCount(5)
-        headers = ("Name", "Text", "Polarity", "Intensity", "Date")
-        self.tweets_model.setHorizontalHeaderLabels(headers)
-        for i in range(len(messages)):
-            tweet = messages[i]
+            self.tweets_model = QStandardItemModel()
+            self.table.setModel(self.tweets_model)
+            # Do the resize of the columns by content
+            self.tweets_model.setColumnCount(5)
+            headers = ("Name", "Text", "Polarity", "Intensity", "Date")
+            self.tweets_model.setHorizontalHeaderLabels(headers)
+            for i in range(len(messages)):
+                tweet = messages[i]
 
-            column_1 = QStandardItem((tweet.name))
-            column_2 = QStandardItem((tweet.twitter_text))
-            column_3 = QStandardItem((str(tweet.polarity)))
-            column_4 = QStandardItem((str(tweet.intensity)))
-            column_5 = QStandardItem((tweet.creation_date.strftime("%m/%d/%Y, %H:%M:%S")))
+                column_1 = QStandardItem((tweet.name))
+                column_2 = QStandardItem((tweet.twitter_text))
+                column_3 = QStandardItem((str(tweet.polarity)))
+                column_4 = QStandardItem((str(tweet.intensity)))
+                column_5 = QStandardItem((tweet.creation_date.strftime("%m/%d/%Y, %H:%M:%S")))
 
-            self.tweets_model.setItem(i, 0, column_1)
-            self.tweets_model.setItem(i, 1, column_2)
-            self.tweets_model.setItem(i, 2, column_3)
-            self.tweets_model.setItem(i, 3, column_4)
-            self.tweets_model.setItem(i, 4, column_5)
+                self.tweets_model.setItem(i, 0, column_1)
+                self.tweets_model.setItem(i, 1, column_2)
+                self.tweets_model.setItem(i, 2, column_3)
+                self.tweets_model.setItem(i, 3, column_4)
+                self.tweets_model.setItem(i, 4, column_5)
 
-        self.table.resizeColumnsToContents()
+                self.table.resizeColumnsToContents()
 
-        self.table_layout.addWidget(self.table)
+                self.table_layout.addWidget(self.table)
 
-        self.table.setGeometry(self.central_widget.geometry())
+                self.table.setGeometry(self.central_widget.geometry())
 
     def report_messages(self):
         self.central_widget.deleteLater()
@@ -148,7 +149,6 @@ class MainWindow(QMainWindow):
 
         plt.title("Sentiments from Tweets " + query)
         plt.show()
-
 
 
 if __name__ == '__main__':
