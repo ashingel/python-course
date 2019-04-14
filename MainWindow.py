@@ -3,7 +3,7 @@ from SearchMessages import SearchMessages
 from PyQt5.QtCore import QCoreApplication
 from PyQt5.QtGui import QFont, QStandardItemModel, QStandardItem
 from PyQt5.QtWidgets import QMainWindow, QApplication, QToolTip, QMenuBar, QMessageBox, QDesktopWidget, QWidget, \
-    QVBoxLayout, QTableView, QCheckBox, QComboBox, QHBoxLayout, QPushButton
+    QVBoxLayout, QTableView, QCheckBox, QComboBox, QHBoxLayout, QPushButton, QGridLayout, QLabel, QRadioButton
 
 import Settings
 import os
@@ -105,7 +105,6 @@ class MainWindow(QMainWindow):
         self.central_widget = QWidget(self)
 
         self.queries_combo_box = QComboBox(self)
-        # self.queries_combo_box.currentIndexChanged.connect(self.query_changed)
 
         self.connection_manager = db.ConnectionManager(None)
         show_button = QPushButton("Show")
@@ -116,11 +115,48 @@ class MainWindow(QMainWindow):
         for item in queries:
             self.queries_combo_box.addItem(item[0])
 
-        layout = QHBoxLayout(self)
-        layout.addWidget(self.queries_combo_box)
-        layout.addWidget(show_button)
+        self.polarity_combo = QComboBox(self)
+        self.polarity_combo.addItem("All Polarity")
+        self.polarity_combo.addItem("Positive")
+        self.polarity_combo.addItem("Neutral")
+        self.polarity_combo.addItem("Negative")
 
-        self.central_widget.setLayout(layout)
+        label = QLabel("Query :")
+        polarity_label = QLabel("Polarity Type :")
+
+        self.text_rb = QRadioButton("Show as Table ")
+        self.text_rb.setChecked(True)
+        self.histogram_rb = QRadioButton("Show as Histogram")
+
+        main_layout = QGridLayout(self)
+
+        self.right_layout = QVBoxLayout(self)
+
+        left_widget = QWidget()
+        right_widget = QWidget()
+
+        left_layout = QVBoxLayout(self)
+        left_layout.addWidget(label)
+        left_layout.addWidget(self.queries_combo_box)
+        left_layout.addWidget(polarity_label)
+        left_layout.addWidget(self.polarity_combo)
+        left_layout.addWidget(self.queries_combo_box)
+
+        left_layout.addWidget(self.text_rb)
+        left_layout.addWidget(self.histogram_rb)
+
+        left_layout.addWidget(show_button)
+
+        self.report_table = QTableView(self)
+        self.right_layout.addWidget(self.report_table)
+
+        left_widget.setLayout(left_layout)
+        right_widget.setLayout(self.right_layout)
+
+        main_layout.addWidget(left_widget, 0, 0)
+        main_layout.addWidget(right_widget, 0, 1)
+
+        self.central_widget.setLayout(main_layout)
         self.setCentralWidget(self.central_widget)
 
         # sentiment_df = pd.DataFrame()
@@ -132,23 +168,46 @@ class MainWindow(QMainWindow):
 
     def query_changed(self):
         query = self.queries_combo_box.currentText()
-        tweets = self.connection_manager.get_polarity_messages(query)
+        polarity = self.polarity_combo.currentText()
+        # tweets = self.connection_manager.get_polarity_messages(query)
+        tweets = self.connection_manager.get_polarity_messages(query, polarity)
 
-        # for tweet in tweets:
-        #
-        #     pass
+        if self.histogram_rb.isChecked():
 
-        sentiment_df = pd.DataFrame(tweets)
+            sentiment_df = pd.DataFrame(tweets)
 
-        fig, ax = plt.subplots(figsize=(8, 6))
+            fig, ax = plt.subplots(figsize=(8, 6))
 
-        # Plot histogram with break at zero
-        sentiment_df.hist(bins=[-1, -0.75, -0.5, -0.25, 0.0, 0.25, 0.5, 0.75, 1],
-                          ax=ax,
-                          color="purple")
+            # Plot histogram with break at zero
+            sentiment_df.hist(bins=[-1, -0.75, -0.5, -0.25, 0.0, 0.25, 0.5, 0.75, 1],
+                              ax=ax,
+                              color="blue")
 
-        plt.title("Sentiments from Tweets " + query)
-        plt.show()
+            plt.title("Sentiments from Tweets " + query)
+            plt.show()
+        else:
+            if tweets is not None:
+                if self.report_table is None:
+                    self.report_table = QTableView(self)
+                else:
+                    self.right_layout.removeWidget(self.report_table)
+
+                self.report_tweets_model = QStandardItemModel()
+                self.report_table.setModel(self.report_tweets_model)
+                # Do the resize of the columns by content
+                self.report_tweets_model.setColumnCount(1)
+                headers = ("Text",)
+                self.report_tweets_model.setHorizontalHeaderLabels(headers)
+                for i in range(len(tweets)):
+                    tweet = tweets[i]
+                    column_1 = QStandardItem((tweet[0]))
+                    self.report_tweets_model.setItem(i, 0, column_1)
+
+                self.report_table.resizeColumnsToContents()
+
+                self.right_layout.addWidget(self.report_table)
+
+                self.report_table.setGeometry(self.central_widget.geometry())
 
 
 if __name__ == '__main__':

@@ -2,7 +2,7 @@ from configparser import RawConfigParser
 
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QMainWindow, QToolTip, QWidget, QGroupBox, QGridLayout, QLabel, QTextEdit, QPushButton, \
-    QVBoxLayout, QDesktopWidget, QRadioButton, QLayout, QHBoxLayout
+    QVBoxLayout, QDesktopWidget, QRadioButton, QLayout, QHBoxLayout, QLineEdit
 
 
 class Settings(QMainWindow):
@@ -31,13 +31,23 @@ class Settings(QMainWindow):
         self.custom_model_rb = QRadioButton("Use custom sentiments model")
 
         selected_model = self.sentiments_config["sentiments.model"]
+
         if selected_model == "default":
             self.default_model_rb.setChecked(True)
         else:
             self.custom_model_rb.setChecked(True)
 
+        self.tweets_number = self.sentiments_config["tweets.to.download"]
+
+        label = QLabel("Tweets to download")
+        self.edit = QLineEdit()
+        self.edit.setText(str(self.tweets_number))
+
         sentiments_layout.addWidget(self.default_model_rb, 0, 0)
         sentiments_layout.addWidget(self.custom_model_rb, 1, 0)
+        sentiments_layout.addWidget(label, 3, 0)
+        sentiments_layout.addWidget(self.edit, 3, 1)
+
         self.sentiments_groupBox.setLayout(sentiments_layout)
 
         save_button = QPushButton("Save Settings")
@@ -83,6 +93,7 @@ class Settings(QMainWindow):
                 self.config.set('Sentiments Settings', "sentiments.model", "default")
             else:
                 self.config.set('Sentiments Settings', "sentiments.model", "custom")
+            self.config.set('Sentiments Settings', "tweets.to.download", str(self.edit.text()))
             with open("././resources/application.properties", "r+") as config_file:
                 self.config.write(config_file)
         except Exception as ex:

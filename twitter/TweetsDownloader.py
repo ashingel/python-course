@@ -18,9 +18,9 @@ class TweetsDownloader:
         # init twitter reading settings
         config = RawConfigParser()
         config.read("././resources/application.properties")
-        # config.read(
-        #     "D:/projects/education/python/sources/course-work/sources/python-course/resources/application.properties")
         self.access_details = dict(config.items('Twitter Access Section'))
+        self.sentiments_config = dict(config.items('Sentiments Settings'))
+        self.tweets_number = self.sentiments_config["tweets.to.download"]
 
     # Method for reading simple timeline
     def get_tweet_messages(self, query, since_date):
@@ -38,12 +38,13 @@ class TweetsDownloader:
         # public_tweets = api.search(q="minsk", lang="en", since_id=ConnectionManager.STARTING_ID)
 
         query += " -filter:retweets"
-        searched_tweets = tweepy.Cursor(api.search, q=query, count=10, include_entities=True, tweet_mode='extended',
+        searched_tweets = tweepy.Cursor(api.search, q=query, count=int(self.tweets_number), include_entities=True,
+                                        tweet_mode='extended',
                                         since=since_date, lang="en")
 
         tweets = list()
 
-        for tweet in searched_tweets.items(10):
+        for tweet in searched_tweets.items(int(self.tweets_number)):
             user = tweet.user
             tweet_obj = Tweet.Tweet(tweet, user)
             tweets.append(tweet_obj)
@@ -67,6 +68,5 @@ def test_twitter():
 
     connection_manager = ConnectionManager(path_to_db)
     connection_manager.save_messages(messages, query)
-
 
 # test_twitter()

@@ -111,3 +111,25 @@ class ConnectionManager:
             print(ex)
 
         return result
+
+    def get_polarity_messages(self, query, polarity):
+
+        query_id = self.get_query_id(query)
+        if polarity == "All Polarity":
+            sql = "SELECT tw_text,polarity FROM tweets WHERE query_id ={}".format(query_id)
+        else:
+            if polarity == "Positive":
+                sql = "SELECT tw_text,polarity FROM tweets WHERE query_id ={} AND polarity{}".format(query_id, ">0")
+            elif polarity == "Negative":
+                sql = "SELECT tw_text,polarity FROM tweets WHERE query_id ={} AND polarity{}".format(query_id, "<0")
+            else:
+                sql = "SELECT tw_text,polarity FROM tweets WHERE query_id ={} AND polarity{}".format(query_id, "=0")
+        result = list()
+        try:
+            cursor = self.connection.cursor().execute(sql)
+            for record in cursor:
+                result.append(record)
+        except Exception as ex:
+            print(ex)
+
+        return result
